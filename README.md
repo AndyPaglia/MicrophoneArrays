@@ -28,7 +28,7 @@ The repository follows a progressive learning path, starting from basic sound pr
 - **Experiment 06 — Delay-and-Sum Beamforming**  
   Direction-of-Arrival estimation by scanning different angles and coherently combining microphone signals.
 
-- **Experiment 07 — Beam Pattern** 🚧  
+- **Experiment 07 — Beam Pattern** 
   Main lobe, sidelobes, angular resolution and array geometry.
 
 ## Learning path
