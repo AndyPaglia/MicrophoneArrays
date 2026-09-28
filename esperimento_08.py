@@ -1,3 +1,10 @@
+# 8) SPATIAL ALIASING AND GRATING LOBES
+
+# Se d > lambda/2 potrebbero comparire grating lobes
+# d deve essere minore di lambda/2
+# d < c/2f
+# f_alias = c/2d
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -8,7 +15,7 @@ c = 343.0
 
 def beam_pattern(M, d, f0):
 
-    # posizioni microfoni. M microfoni centrati in 0
+    # posizioni microfoni
     mic_x = (np.arange(M) - (M - 1) / 2) * d
 
     # direzione verso cui puntiamo
@@ -20,8 +27,11 @@ def beam_pattern(M, d, f0):
 
     steering0 = np.exp(-1j * 2 * np.pi * f0 * tau0)
 
-    # angoli che vogliamo analizzare
+    # angoli da analizzare
     angles_deg = np.linspace(-90, 90, 2001)
+
+
+
 
     response = []
 
@@ -29,11 +39,10 @@ def beam_pattern(M, d, f0):
 
         theta = np.deg2rad(angle_deg)
 
-        tau = (mic_x * np.sin(theta) / c)
+        tau = (mic_x  * np.sin(theta) / c)
 
         steering = np.exp(-1j * 2 * np.pi * f0 * tau)
 
-        # risposta dell'array
         y = np.vdot(steering0, steering)
 
         power = np.abs(y)**2
@@ -42,40 +51,58 @@ def beam_pattern(M, d, f0):
 
     response = np.array(response)
 
-    # normalizzazione
     response /= np.max(response)
 
-    # conversione dB
     response_db = 10 * np.log10(
         response + 1e-12
     )
 
     return angles_deg, response_db
 
-plt.figure(figsize=(10, 6))
+# PARAMETRI ARRAY
+M = 8
+d = 0.05
 
-for M in [2, 4, 8, 16]:
+alias_frequency = c / (2 * d)
+
+print("Frequenza limite:", alias_frequency,"Hz")
+
+# CONFRONTO FREQUENZE
+
+frequencies = [
+    1000,
+    3000,
+    4000,
+    5000,
+    8000
+]
+
+# Figure differenti in base a differenti frequenze
+plt.figure(figsize=(11, 6))
+
+for f0 in frequencies:
 
     angles, pattern = beam_pattern(
-        M=M,
-        d=0.05,
-        f0=1000
+        M,
+        d,
+        f0
     )
 
     plt.plot(
         angles,
         pattern,
-        label=f"M = {M}"
+        label=f"{f0} Hz"
     )
+
 
 plt.xlabel("Angolo [gradi]")
 plt.ylabel("Risposta [dB]")
 
 plt.title(
-    "Effetto del numero di microfoni"
+    "Spatial aliasing al variare della frequenza"
 )
 
-plt.ylim(-40, 0)
+plt.ylim(-40, 1)
 plt.xlim(-90, 90)
 
 plt.grid()
@@ -83,64 +110,41 @@ plt.legend()
 
 plt.show()
 
-plt.figure(figsize=(10, 6))
+# Figures con differenti d
+f0 = 1000
 
-for d in [0.02, 0.05, 0.10]:
+spacings = [
+    0.05,
+    0.10,
+    0.20,
+    0.30
+]
+
+plt.figure(figsize=(11, 6))
+
+for d_test in spacings:
 
     angles, pattern = beam_pattern(
         M=8,
-        d=d,
+        d=d_test,
         f0=1000
     )
 
-    D = (8 - 1) * d
-
     plt.plot(
         angles,
         pattern,
-        label=f"d={d} m, D={D:.2f} m"
+        label=f"d = {d_test} m"
     )
 
 plt.xlabel("Angolo [gradi]")
 plt.ylabel("Risposta [dB]")
 
 plt.title(
-    "Effetto dell'apertura dell'array"
+    "Spatial aliasing al variare di d"
 )
 
-plt.ylim(-40, 0)
-
-plt.grid()
-plt.legend()
-
-plt.show()
-
-plt.figure(figsize=(10, 6))
-
-for f0 in [500, 1000, 2000, 3000]:
-
-    angles, pattern = beam_pattern(
-        M=8,
-        d=0.05,
-        f0=f0
-    )
-
-    wavelength = c / f0
-
-    plt.plot(
-        angles,
-        pattern,
-        label=f"{f0} Hz, λ={wavelength:.3f} m"
-    )
-
-plt.xlabel("Angolo [gradi]")
-plt.ylabel("Risposta [dB]")
-
-plt.title(
-    "Effetto della frequenza"
-)
-
-plt.ylim(-40, 0)
+plt.ylim(-40, 1)
+plt.xlim(-90, 90)
 
 plt.grid()
 plt.legend()
